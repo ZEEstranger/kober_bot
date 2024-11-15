@@ -3,6 +3,7 @@ import responses
 from discord.ext import commands
 from search_player import get_all_players, add_new_player, roll_team_setup, check_db_team_setup, get_custom_channels, check_correct_setup
 from settings import discord_bot_token
+import psycopg2
 
 
 
@@ -13,7 +14,6 @@ def run_discord_bot():
     intents.reactions = True
 
     bot = commands.Bot(command_prefix='$', intents=intents)
-
 
     bot.reg_msg = None
     bot.current_custom_players = []
@@ -26,27 +26,25 @@ def run_discord_bot():
     @bot.event
     async def on_reaction_add(reaction, user):
         if reaction.message.id == bot.reg_msg and reaction.emoji == '👍':
-            # await reaction.message.channel.send(f"{user}, {reaction.emoji}")
             bot.current_custom_players.append(user.id)
 
 
     @bot.event
     async def on_reaction_remove(reaction, user):
         if reaction.message.id == bot.reg_msg and reaction.emoji == '👍':
-            # await reaction.message.channel.send(f"{user}, {reaction.emoji}")
             bot.current_custom_players.remove(user.id)
 
     
     @bot.command()
-    async def players(ctx):
+    async def players_show(ctx):
         players = get_all_players(ctx.guild.id)
 
         names_str = "\n".join(player[1] for player in players)
         mentions_str = "\n".join(f'<@{player[0]}>' for player in players)
 
-        embed = discord.Embed(
-            title='Players List',
-            color=discord.Color.blurple())
+        embed = discord.Embed(title='Players List',
+                              color=discord.Color.blurple()
+                              )
         embed.add_field(name="", value=names_str, inline="true")
         embed.add_field(name="", value=mentions_str, inline="true")
 
@@ -62,10 +60,16 @@ def run_discord_bot():
         try:
             add_new_player(ctx.guild.id, user, name)
             await ctx.send(f'Player "{name}" added by <@{str(user)}>')
-        except Exception as e:
+        except psycopg2.errors.UniqueViolation as error:
             await ctx.send(f'Sorry. Something went wrong')
 
         
+    @bot.command()
+    async def button(ctx):
+        view = discord.ui.View()
+        but = discord.ui.Button("Click me")
+        view.add_item(but)
+        await ctx.send(view=view)
 
     @bot.command()
     async def custom_create(ctx):
@@ -81,6 +85,7 @@ def run_discord_bot():
 
         print(bot.current_custom_players)
         ###################
+        bot.current_custom_players = [342325519066333204, 277396353389297664, 331401636792762388, 983266083219841044]
         ###################
         bot.current_custom_players.sort()
 

@@ -14,7 +14,7 @@ def get_all_players(guild_id):
 
     return data
 
-        
+
 def add_new_player(guild_id, disc_id, name):
     "Зарегистрировать игрока в БД"
     conn = psycopg2.connect(dbname='customs', user='postgres', password='1184', host='localhost')
@@ -48,7 +48,7 @@ def check_db_team_setup(guild_id:int, players_id_list:list):
 
 
     players_str = ", ".join(map(str, players_id_list))
-    sql_query = f"""select * from team_setups where all_players @> '{{{players_str}}}' and discord_guild_id = {guild_id}"""
+    sql_query = f"select * from team_setups where all_players @> '{{{players_str}}}' and discord_guild_id = {guild_id}"
     db_data = get_db_data_from_query(sql_query, True)
 
     if not db_data:

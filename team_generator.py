@@ -2,7 +2,7 @@ import random
 import pandas as pd
 import itertools as ite
 
-from add_func import bubble_sort, get_custom_players
+from add_func import get_custom_players
 
 def read_numbers():
     """
